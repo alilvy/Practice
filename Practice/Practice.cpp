@@ -21,6 +21,7 @@ struct Record
 };
 
 
+
 void myCentr(string s, int wLine) {
 
 	int w = s.length();
