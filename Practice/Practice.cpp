@@ -11,6 +11,7 @@ struct Date {
 	unsigned short year;
 };
 
+
 struct Record
 {
 	char surName[17];
