@@ -1,5 +1,4 @@
-﻿﻿// var_6.cpp : 
-#include <iostream>
+﻿#include <iostream>
 #include <windows.h>
 #include <string>
 
@@ -97,6 +96,38 @@ void Draw(struct Record* records) {
 	cout.fill(' '); cout.width(width);  cout << left << "|Примечание: Д - \"Динамо\", С - \"Спартак\", Ш - \"Шахтер\""; cout << "|" << endl;
 	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
 }
+vector<int> getMinMonthDate(struct Record* records) {
+	vector<int> indexes;
+	int minMonth = 13;
+	for (int i = 0; i < 10; i++) {
+		if (records[i].date.month < minMonth) {
+			minMonth = records[i].date.month;
+		}
+	}
+	for (int i = 0; i < 10; i++) {
+		if (minMonth == records[i].date.month) {
+			indexes.push_back(i);
+		}
+	}
+	return indexes;
+}
+
+vector<int> getMaxMonthDate(struct Record* records) {
+	vector<int> indexes;
+	int maxMonth = 0;
+	for (int i = 0; i < 10; i++) {
+		if ((maxMonth < records[i].date.month) and (records[i].date.month < 13)) {
+			maxMonth = records[i].date.month;
+		}
+	}
+	for (int i = 0; i < 10; i++) {
+		if (maxMonth == records[i].date.month) {
+			indexes.push_back(i);
+		}
+	}
+	return indexes;
+}
+
 
 int main()
 {
@@ -109,5 +140,22 @@ int main()
 	records[1] = { "Шишков", 'Ш', 79.9800, 3, {07,07,2022} };
 	records[2] = { "Кравченко", 'Д',  134.8000, 1, {07,06,2022} };
 
+	Draw(records);
+	cout << endl << "Вариант 3" << endl;
+	cout << "Поменять местами записи(элементы массива структур)," << endl;
+	cout << "содержащие минимальный и максимальный номер месяца даты" << endl;
+
+	vector<int> minIndexes = getMinMonthDate(records);
+	vector<int> maxIndexes = getMaxMonthDate(records);
+	for (auto i : minIndexes)
+		cout << endl << "minIndexes = " << i << ' ';
+	for (auto i : maxIndexes)
+		cout << endl << "maxIndexes = " << i << ' ';
+
+	struct Record tmpRecord = records[maxIndexes[0]];
+	for (auto i : maxIndexes)
+		records[i] = records[minIndexes[0]];
+	for (auto i : minIndexes)
+		records[i] = tmpRecord;
 	Draw(records);
 }
