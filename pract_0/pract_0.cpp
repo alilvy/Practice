@@ -1,6 +1,8 @@
-﻿#include <iostream>
+﻿// var 30
+#include <iostream>
 #include <windows.h>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -13,10 +15,11 @@ struct Date {
 struct Record
 {
 	char surName[17];
-	char commandCode;
-	double score;
-	unsigned short place;
+	char ident[12];
+	unsigned short year;
+	float salary;
 	struct Date date;
+	//bool isEmpty;
 };
 
 
@@ -54,48 +57,39 @@ void printDate(unsigned short day, unsigned short month, unsigned short year, in
 	cout.width(delta); cout << " ";
 }
 
-void printWhithZero(int num, int width) {
-	if (num > 999 and num < 10000) {
-		cout.width(width + 1);
-		cout << right << "00" << num;
-	}
-	if (num > 9999 and num < 100000) {
-		cout.width(width);
-		cout << right << "0" << num;
-	}
-}
-
 void Draw(struct Record* records) {
-	unsigned short width = 78 + 16;
-	cout << endl;	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
-	cout.fill(' '); cout.width(width);  cout << left << "|Ведомость спортивных состязаний"; cout << "|" << endl;
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
+	cout << endl;	cout.width(79); cout.fill('-'); cout << "-" << endl;
+	cout.fill(' '); cout.width(78);  cout << left << "|Отдел кадров"; cout << "|" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
 	cout.fill(' ');
-	cout << left << "|  Фамилия участника   ";
-	cout << left << "|  Код команды  ";
-	cout << left << "|  Количество балов  ";
-	cout << left << "|  Место в итоге  ";
-	cout << left << " |     Дата     |" << endl;
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
+	//cout.width(17); cout << "| Фамилия";
+	//cout.width(12); cout << "| Инициалы";
+	//cout.width(12); cout << "| Год рожд" ;
+	//cout.width(12); cout << "| Оклад";
+	//cout.width(25); cout << "| Дата приема на работу";
+	cout << left << "|"; myCentr("Фамилия", 16);
+	cout << left << "|"; myCentr("Инициалы", 11);
+	cout << left << "|"; myCentr("Год рожд", 10);
+	cout << left << "|"; myCentr("Оклад", 10);
+	cout << left << " |"; myCentr("Дата приема на работу", 24);
+	cout << "|" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
 	cout.fill(' ');
 	for (int i = 0; i < 3; i++) {
-		cout << left << "|";  cout.width(22); cout << left << records[i].surName;
-		cout << left << "|";  cout.width(15); cout << left << records[i].commandCode;
-		cout.precision(4);
-		cout << left << "|"; cout << left << fixed << records[i].score;
-		unsigned short w = 12;
-		if (records[i].score > 9 and records[i].score < 100)
-			w += 1;
-		cout.width(w); cout.fill(' '); cout << " ";
-		cout << left << "|";  cout.width(18); cout << left << records[i].place;
+		cout << left << "|"; cout.width(16); cout << left << records[i].surName;
+		cout << left << "|"; cout.width(11); cout << left << records[i].ident;
+		cout << left << "|+"; cout.width(10); cout << left << records[i].year;
+		std::cout.precision(2);
+		cout << left << "|"; cout.width(11); cout << left << fixed << records[i].salary;
 		cout << left << "|";
-		printDate(records[i].date.day, records[i].date.month, records[i].date.year, 16);
+		printDate(records[i].date.day, records[i].date.month, records[i].date.year, 26);
 		cout << "|" << endl;
 	}
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
-	cout.fill(' '); cout.width(width);  cout << left << "|Примечание: Д - \"Динамо\", С - \"Спартак\", Ш - \"Шахтер\""; cout << "|" << endl;
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
+	cout.fill(' '); cout.width(78);  cout << left << "|Примечание: оклад установлен по состоянию на 1 января 2000 года"; cout << "|" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
 }
+
 vector<int> getMinMonthDate(struct Record* records) {
 	vector<int> indexes;
 	int minMonth = 13;
@@ -136,12 +130,14 @@ int main()
 
 	struct Record records[10];
 
-	records[0] = { "Баландин", 'С', 123.7000, 2, {06,06,2022} };
-	records[1] = { "Шишков", 'Ш', 79.9800, 3, {07,07,2022} };
-	records[2] = { "Кравченко", 'Д',  134.8000, 1, {07,06,2022} };
+	records[0] = { "Иванов", "И.И.", 1975, 517.50, {01,02,2010} };
+	records[1] = { "Петренко", "П.П.", 1956, 219.10, {02,03,2020} };
+	records[2] = { "Панковский", "М.С.", 1967, 300.10, {12,12,2012} };
 
 	Draw(records);
-	cout << endl << "Вариант 3" << endl;
+
+
+	cout << endl << "Вариант 30" << endl;
 	cout << "Поменять местами записи(элементы массива структур)," << endl;
 	cout << "содержащие минимальный и максимальный номер месяца даты" << endl;
 
@@ -157,5 +153,7 @@ int main()
 		records[i] = records[minIndexes[0]];
 	for (auto i : minIndexes)
 		records[i] = tmpRecord;
+
+
 	Draw(records);
 }
