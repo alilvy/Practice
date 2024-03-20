@@ -1,8 +1,7 @@
-﻿// var 30
-#include <iostream>
+﻿#include <iostream>
 #include <windows.h>
 #include <string>
-#include <vector>
+#include <cstdlib>
 
 using namespace std;
 
@@ -14,12 +13,11 @@ struct Date {
 
 struct Record
 {
-	char surName[17];
-	char ident[12];
+	char surName[20];
+	char ident[6];
 	unsigned short year;
 	float salary;
 	struct Date date;
-	//bool isEmpty;
 };
 
 
@@ -62,11 +60,7 @@ void Draw(struct Record* records) {
 	cout.fill(' '); cout.width(78);  cout << left << "|Отдел кадров"; cout << "|" << endl;
 	cout.width(79); cout.fill('-'); cout << "-" << endl;
 	cout.fill(' ');
-	//cout.width(17); cout << "| Фамилия";
-	//cout.width(12); cout << "| Инициалы";
-	//cout.width(12); cout << "| Год рожд" ;
-	//cout.width(12); cout << "| Оклад";
-	//cout.width(25); cout << "| Дата приема на работу";
+
 	cout << left << "|"; myCentr("Фамилия", 16);
 	cout << left << "|"; myCentr("Инициалы", 11);
 	cout << left << "|"; myCentr("Год рожд", 10);
@@ -90,38 +84,61 @@ void Draw(struct Record* records) {
 	cout.width(79); cout.fill('-'); cout << "-" << endl;
 }
 
-vector<int> getMinMonthDate(struct Record* records) {
-	vector<int> indexes;
-	int minMonth = 13;
-	for (int i = 0; i < 10; i++) {
-		if (records[i].date.month < minMonth) {
+struct Date getMinDate(struct Record* records) {
+	unsigned short minYear = records[0].date.year;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year < minYear)
+			minYear = records[i].date.year;
+	}
+
+	unsigned short minMonth = records[0].date.month;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year == minYear and records[i].date.month < minMonth)
 			minMonth = records[i].date.month;
-		}
 	}
-	for (int i = 0; i < 10; i++) {
-		if (minMonth == records[i].date.month) {
-			indexes.push_back(i);
-		}
-	}
-	return indexes;
-}
 
-vector<int> getMaxMonthDate(struct Record* records) {
-	vector<int> indexes;
-	int maxMonth = 0;
-	for (int i = 0; i < 10; i++) {
-		if ((maxMonth < records[i].date.month) and (records[i].date.month < 13)) {
+	unsigned short minDay = records[0].date.day;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year == minYear and records[i].date.month == minMonth and records[i].date.day < minDay)
+			minDay = records[i].date.day;
+	}
+
+	struct Date minDate = { minDay, minMonth, minYear };
+	return minDate;
+};
+
+
+struct Date getMaxDate(struct Record* records) {
+	unsigned short maxYear = records[0].date.year;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year > maxYear)
+			maxYear = records[i].date.year;
+	}
+
+	unsigned short maxMonth = records[0].date.month;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year == maxYear and records[i].date.month > maxMonth)
 			maxMonth = records[i].date.month;
-		}
 	}
-	for (int i = 0; i < 10; i++) {
-		if (maxMonth == records[i].date.month) {
-			indexes.push_back(i);
-		}
-	}
-	return indexes;
-}
 
+	unsigned short maxDay = records[0].date.day;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year == maxYear and records[i].date.month == maxMonth and records[i].date.day > maxDay)
+			maxDay = records[i].date.day;
+	}
+
+	struct Date minDate = { maxDay, maxMonth, maxYear };
+	return minDate;
+};
+
+int  findIndex(struct Record* records, const struct Date date) {
+	int ind = -1;
+	for (int i = 0; i < 3; i++) {
+		if (records[i].date.year == date.year && records[i].date.month == date.month && records[i].date.day == date.day)
+			ind = i;
+	}
+	return ind;
+};
 
 int main()
 {
@@ -130,30 +147,85 @@ int main()
 
 	struct Record records[10];
 
-	records[0] = { "Иванов", "И.И.", 1975, 517.50, {01,02,2010} };
-	records[1] = { "Петренко", "П.П.", 1956, 219.10, {02,03,2020} };
-	records[2] = { "Панковский", "М.С.", 1967, 300.10, {12,12,2012} };
-
+	records[0] = { "Иванов", "И.И.", 1975, 517.50, {01,02,2010} };      // Свой комментарий
+	records[1] = { "Петренко", "П.П.", 1956, 219.10, {02,03,2020} };      // Свой комментарий
+	records[2] = { "Панковский", "М.С.", 1967, 300.10, {12,12,2012} };      // Свой комментарий
+	cout << "Исходные данные:" << endl;
 	Draw(records);
+	cout << endl << "Вариант задания: Поменять местами записи (элементы массива структур),";
+	cout << endl << "содержащие минимальную и максимальную даты" << endl;
+
+	struct Date minDate = getMinDate(records);
+	cout << "Минимальная дата: "; cout.fill(' ');
+	printDate(minDate.day, minDate.month, minDate.year, 16);
+	cout << endl;
+
+	struct Date maxDate = getMaxDate(records);
+	cout << "Максимальная дата: "; cout.fill(' ');
+	printDate(maxDate.day, maxDate.month, maxDate.year, 16);
+	cout << endl;
+
+	int indMaxDate = findIndex(records, maxDate);
+	int indMinDate = findIndex(records, minDate);
+
+	struct Record newRecords[10];
+	for (int i = 0; i < 3; i++) {
+		if (i == indMaxDate)
+			newRecords[i] = records[indMinDate];
+		else if (i == indMinDate)
+			newRecords[i] = records[indMaxDate];
+		else
+			newRecords[i] = records[i];
+	}
+	cout << "Данные по варианту задания:" << endl;
+	Draw(newRecords);
+
+	cout << endl << "Практическая № 2 (Динамические массивы):" << endl;
 
 
-	cout << endl << "Вариант 30" << endl;
-	cout << "Поменять местами записи(элементы массива структур)," << endl;
-	cout << "содержащие минимальный и максимальный номер месяца даты" << endl;
+	Record* A;
+	int n = 3;
+	A = (Record*)malloc(n * sizeof(Record));
+	//A = (Record*)calloc(n, sizeof(Record)); 
+	for (int i = 0; i < n; i++) {
+		strcpy_s(A[i].surName, records[i].surName);
+		strcpy_s(A[i].ident, records[i].ident);
+		//A[i].surName = records[i].surName;
+		/*A[i].year, records[i].year;*/
+		//A[i].surName.assign(records[i].surName.c_str());
+		//	*(B[i]) = records[i];
+		//basic_string<char>
+	}
 
-	vector<int> minIndexes = getMinMonthDate(records);
-	vector<int> maxIndexes = getMaxMonthDate(records);
-	for (auto i : minIndexes)
-		cout << endl << "minIndexes = " << i << ' ';
-	for (auto i : maxIndexes)
-		cout << endl << "maxIndexes = " << i << ' ';
+	Record** B;
+	B = (Record**) new Record * [10];
+	for (int i = 0; i < 10; i++) {
+		B[i] = (Record*) new Record;
+		*(B[i]) = records[i];
+	}
 
-	struct Record tmpRecord = records[maxIndexes[0]];
-	for (auto i : maxIndexes)
-		records[i] = records[minIndexes[0]];
-	for (auto i : minIndexes)
-		records[i] = tmpRecord;
+	//
+	A = (Record*)realloc(A, 10 * sizeof(Record));
+	// 
+	//Record ** B;
+	//B = (Record**) new Record * [10];
+	//for (int i = 0; i < 10; i++) {
+	//	B[i] = (Record*) new Record;
+	//	*(B[i]) = A[i];
+	//	//B[i].surName = A[i].surName;
+	//	//*(B[i])->surName = A[i]->surName;
+	//	
+	//}
 
+	//адрес а[i], значение a[i]->строковое_поле, адрес в[i], значение в[i]->строковое_поле.
+	for (int i = 0; i < 10; i++) {
+		cout << endl << "адрес A[i] " << &A[i] << " a[i]->surName " << A[i].surName;
+		//cout << endl << "адрес B[i] " << &B[i] << " B[i]->surName " << B[i]->surName;
+	}
 
-	Draw(records);
+	//for (int i = 0; i < 10; i++) {
+	//	delete B[i];
+	//}
+	//delete[]B;
+	//free(A);
 }
