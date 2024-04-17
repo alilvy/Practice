@@ -1,6 +1,9 @@
-﻿﻿#include <iostream>
+﻿
+#include <iostream>
 #include <windows.h>
 #include <string>
+#include <stdio.h>
+#include <fstream>
 
 using namespace std;
 
@@ -13,18 +16,18 @@ struct Date {
 struct Record
 {
 	char surName[17];
-	char commandCode;
-	double score;
-	unsigned short place;
+	char ident[6];
+	unsigned short year;
+	float salary;
 	struct Date date;
-	bool isEmpty;
 };
 
 struct node {
 	Record data;
 	struct node* next;
 };
-struct node* myHead;
+
+node* myHead;
 int countItem = 0;
 
 void myCentr(string s, int wLine) {
@@ -61,52 +64,91 @@ void printDate(unsigned short day, unsigned short month, unsigned short year, in
 	cout.width(delta); cout << " ";
 }
 
-void printWhithZero(int num, int width) {
-	if (num > 999 and num < 10000) {
-		cout.width(width + 1);
-		cout << right << "00" << num;
+void Draw(struct Record* records, int num) {
+	cout << endl;	cout.width(79); cout.fill('-'); cout << "-" << endl;
+	cout.fill(' '); cout.width(78);  cout << left << "|Отдел кадров"; cout << "|" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
+	cout.fill(' ');
+
+	cout << left << "|"; myCentr("Фамилия", 16);
+	cout << left << "|"; myCentr("Инициалы", 11);
+	cout << left << "|"; myCentr("Год рожд", 10);
+	cout << left << "|"; myCentr("Оклад", 10);
+	cout << left << " |"; myCentr("Дата приема на работу", 24);
+	cout << "|" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
+	cout.fill(' ');
+	for (int i = 0; i < num; i++) {
+		cout << left << "|"; cout.width(16); cout << left << records[i].surName;
+		cout << left << "|"; cout.width(11); cout << left << records[i].ident;
+		cout << left << "|+"; cout.width(10); cout << left << records[i].year;
+		std::cout.precision(2);
+		cout << left << "|"; cout.width(11); cout << left << fixed << records[i].salary;
+		cout << left << "|";
+		printDate(records[i].date.day, records[i].date.month, records[i].date.year, 26);
+		cout << "|" << endl;
 	}
-	if (num > 9999 and num < 100000) {
-		cout.width(width);
-		cout << right << "0" << num;
-	}
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
+	cout.fill(' '); cout.width(78);  cout << left << "|Примечание: оклад установлен по состоянию на 1 января 2000 года"; cout << "|" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
 }
 
-void Draw(struct Record* records) {
-	unsigned short width = 78 + 16;
-	cout << endl;	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
-	cout.fill(' '); cout.width(width);  cout << left << "|Ведомость спортивных состязаний"; cout << "|" << endl;
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
-	cout.fill(' ');
-	cout << left << "|  Фамилия участника   ";
-	cout << left << "|  Код команды  ";
-	cout << left << "|  Количество балов  ";
-	cout << left << "|  Место в итоге  ";
-	cout << left << " |     Дата     |" << endl;
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
-	cout.fill(' ');
-	for (int i = 0; i < 10; i++) {
-		if (not records[i].isEmpty) {
-			cout << left << "|";  cout.width(22); cout << left << records[i].surName;
-			cout << left << "|";  cout.width(15); cout << left << records[i].commandCode;
-			cout.precision(4);
-			cout << left << "|"; cout << left << fixed << records[i].score;
-			unsigned short w = 12;
-			if (records[i].score > 9 and records[i].score < 100)
-				w += 1;
-			if (records[i].score > 0 and records[i].score < 10)
-				w += 2;
-			cout.width(w); cout.fill(' '); cout << " ";
-			cout << left << "|";  cout.width(18); cout << left << records[i].place;
-			cout << left << "|";
-			printDate(records[i].date.day, records[i].date.month, records[i].date.year, 16);
-			cout << "|" << endl;
-		}
+
+struct Date getMinDate(struct Record* records) {
+	unsigned short minYear = records[0].date.year;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year < minYear)
+			minYear = records[i].date.year;
 	}
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
-	cout.fill(' '); cout.width(width);  cout << left << "|Примечание: Д - \"Динамо\", С - \"Спартак\", Ш - \"Шахтер\""; cout << "|" << endl;
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
-}
+
+	unsigned short minMonth = records[0].date.month;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year == minYear and records[i].date.month < minMonth)
+			minMonth = records[i].date.month;
+	}
+
+	unsigned short minDay = records[0].date.day;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year == minYear and records[i].date.month == minMonth and records[i].date.day < minDay)
+			minDay = records[i].date.day;
+	}
+
+	struct Date minDate = { minDay, minMonth, minYear };
+	return minDate;
+};
+
+
+struct Date getMaxDate(struct Record* records) {
+	unsigned short maxYear = records[0].date.year;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year > maxYear)
+			maxYear = records[i].date.year;
+	}
+
+	unsigned short maxMonth = records[0].date.month;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year == maxYear and records[i].date.month > maxMonth)
+			maxMonth = records[i].date.month;
+	}
+
+	unsigned short maxDay = records[0].date.day;
+	for (int i = 1; i < 3; i++) {
+		if (records[i].date.year == maxYear and records[i].date.month == maxMonth and records[i].date.day > maxDay)
+			maxDay = records[i].date.day;
+	}
+
+	struct Date minDate = { maxDay, maxMonth, maxYear };
+	return minDate;
+};
+
+int  findIndex(struct Record* records, const struct Date date) {
+	int ind = -1;
+	for (int i = 0; i < 3; i++) {
+		if (records[i].date.year == date.year && records[i].date.month == date.month && records[i].date.day == date.day)
+			ind = i;
+	}
+	return ind;
+};
 
 void addItem(Record data)
 {
@@ -122,11 +164,7 @@ void addItem(Record data)
 	myHead = newItem;
 	countItem++;
 }
-/// <summary>
-/// Вставка элемента в список
-/// </summary>
-/// <param name="index">индекс после которого вставить</param>
-/// <param name="data">значение которое необходимо вставить</param>
+
 void insertItem(int index, Record data) {
 	if (not (index >= 0 and index <= countItem and countItem >= 0))
 		return;
@@ -145,17 +183,11 @@ void insertItem(int index, Record data) {
 		countItem++;
 	}
 }
-/// <summary>
-/// Изменить элемент списка
-/// </summary>
-/// <param name="index">индекс изменяемого элемента</param>
-/// <param name="data">значение на которое нужно изменить</param>
 void editItem(int index, Record data) {
 	if (index >= 0 and index < countItem and countItem>0) {
 		struct node* current = myHead;
 		for (int i = 0; i < index; i++) {
 			current = current->next;
-			//cout << "+" << current->data;
 		}
 		current->data = data;
 	}
@@ -163,10 +195,6 @@ void editItem(int index, Record data) {
 		cout << endl << "Ошибка индекс не в диапазоне";
 	}
 }
-/// <summary>
-/// Функция для удаления элемента из динамического списка
-/// </summary>
-/// <param name="index">Индекс удаляемого элемента</param>
 void deleteItem(int index) {
 	if (index >= 0 and index < countItem and countItem>0) {
 		struct node* current = myHead;
@@ -192,6 +220,7 @@ void deleteItem(int index) {
 			}
 		}
 	}
+
 }
 void printMyList() {
 	struct node* current = myHead;
@@ -202,122 +231,134 @@ void printMyList() {
 	}
 }
 void DrawWithList() {
-	unsigned short width = 78 + 16;
-	cout << endl;	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
-	cout.fill(' '); cout.width(width);  cout << left << "|Ведомость спортивных состязаний"; cout << "|" << endl;
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
+	cout << endl;	cout.width(79); cout.fill('-'); cout << "-" << endl;
+	cout.fill(' '); cout.width(78);  cout << left << "|Отдел кадров"; cout << "|" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
 	cout.fill(' ');
-	cout << left << "|  Фамилия участника   ";
-	cout << left << "|  Код команды  ";
-	cout << left << "|  Количество балов  ";
-	cout << left << "|  Место в итоге  ";
-	cout << left << " |     Дата     |" << endl;
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
+	cout << left << "|"; myCentr("Фамилия", 16);
+	cout << left << "|"; myCentr("Инициалы", 11);
+	cout << left << "|"; myCentr("Год рожд", 10);
+	cout << left << "|"; myCentr("Оклад", 10);
+	cout << left << " |"; myCentr("Дата приема на работу", 24);
+	cout << "|" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
 	cout.fill(' ');
 	struct node* current = myHead;
 	while (current) {
-		cout << left << "|"; cout.width(22); cout << left << current->data.surName;
-		cout << left << "|"; cout.width(15); cout << left << current->data.commandCode;
-		cout << left << "|"; cout.width(10 + 10); cout << left << current->data.score;
-		std::cout.precision(4);
-		cout << left << "|"; cout.width(18); cout << left << fixed << current->data.place;
+		cout << left << "|"; cout.width(16); cout << left << current->data.surName;
+		cout << left << "|"; cout.width(11); cout << left << current->data.ident;
+		cout << left << "|+"; cout.width(10); cout << left << current->data.year;
+		std::cout.precision(2);
+		cout << left << "|"; cout.width(11); cout << left << fixed << current->data.salary;
 		cout << left << "|";
-		printDate(current->data.date.day, current->data.date.month, current->data.date.year, 16);
+		printDate(current->data.date.day, current->data.date.month, current->data.date.year, 26);
 		cout << "|" << endl;
 		current = current->next;
 	}
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
-	cout.fill(' '); cout.width(width);  cout << left << "|Примечание: Д - \"Динамо\", С - \"Спартак\", Ш - \"Шахтер\""; cout << "|" << endl;
-	cout.width(width + 1); cout.fill('-'); cout << "-" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
+	cout.fill(' '); cout.width(78);  cout << left << "|Примечание: оклад установлен по состоянию на 1 января 2000 года"; cout << "|" << endl;
+	cout.width(79); cout.fill('-'); cout << "-" << endl;
 }
-
 
 int main()
 {
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 
+	// Практика 0
 	struct Record records[10];
+	records[0] = { "Иванов", "И.И.", 1975, 517.50, {01,02,2010} };
+	records[1] = { "Петренко", "П.П.", 1956, 219.10, {02,03,2020} };
+	records[2] = { "Панковский", "М.С.", 1967, 300.10, {12,12,2012} };
+	cout << "Исходные данные:" << endl;
+	Draw(records, 3);
 
-	records[0] = { "Баландин", 'С', 123.7000, 2, {06,06,2022},0 };
-	records[1] = { "Шишков", 'Ш', 79.9800, 3, {07,07,2022},0 };
-	records[2] = { "Кравченко", 'Д',  134.8000, 1, {07,06,2022},0 };
-
-	Draw(records);
-
-	records[3] = { "Min", 'M',  0.0001, 1, {01,01,2000},0 };
-
-
-	Draw(records);
-	cout << endl << "Практическая № 2 (Динамические массивы):" << endl;
-
-
-	Record* A;
-	int n = 3;
-	A = (Record*)malloc(n * sizeof(Record));
-	//A = (Record*)calloc(n, sizeof(Record)); 
-	for (int i = 0; i < n; i++) {
-		strcpy_s(A[i].surName, records[i].surName);
-		//strcpy_s(A[i].commandCode, records[i].commandCode);
-		//A[i].surName = records[i].surName;
-		/*A[i].year, records[i].year;*/
-		//A[i].surName.assign(records[i].surName.c_str());
-		//	*(B[i]) = records[i];
-		//basic_string<char>
+	FILE* textFile;
+	fopen_s(&textFile, "textFile.txt", "w+");
+	for (int i = 0; i < 3; i++) {
+		fprintf(textFile, "%s %s %d %f %d %d %d \n", \
+			records[i].surName, \
+			records[i].ident, \
+			records[i].year, \
+			records[i].salary, \
+			records[i].date.day, records[i].date.month, records[i].date.year);
 	}
-
-	Record** B;
-	B = (Record**) new Record * [10];
-	for (int i = 0; i < 10; i++) {
-		B[i] = (Record*) new Record;
-		*(B[i]) = records[i];
+	fclose(textFile);
+	fopen_s(&textFile, "textFile.txt", "r");
+	Record readRecords[3];
+	for (int i = 0; i < 3; i++) {
+		fscanf_s(textFile, "%s", readRecords[i].surName, _countof(readRecords[i].surName));
+		fscanf_s(textFile, "%s", readRecords[i].ident, _countof(readRecords[i].ident));
+		fscanf_s(textFile, "%d", &readRecords[i].year);
+		fscanf_s(textFile, "%f", &readRecords[i].salary);
+		fscanf_s(textFile, "%d", &readRecords[i].date.day);
+		fscanf_s(textFile, "%d", &readRecords[i].date.month);
+		fscanf_s(textFile, "%d", &readRecords[i].date.year);
 	}
+	fclose(textFile);
+	Draw(readRecords, 3);
+	FILE* binaryFile;
+	fopen_s(&binaryFile, "binaryFile.txt", "w");
+	fwrite(records, sizeof(records), 1, binaryFile);
+	fclose(binaryFile);
+	fopen_s(&binaryFile, "binaryFile.txt", "rb");
+	fread_s(readRecords, sizeof(readRecords), sizeof(readRecords), 1, binaryFile);
+	fclose(binaryFile);
+	Draw(readRecords, 3);
 
-	//
-	A = (Record*)realloc(A, 10 * sizeof(Record));
-	// 
-	//Record ** B;
-	//B = (Record**) new Record * [10];
-	//for (int i = 0; i < 10; i++) {
-	//	B[i] = (Record*) new Record;
-	//	*(B[i]) = A[i];
-	//	//B[i].surName = A[i].surName;
-	//	//*(B[i])->surName = A[i]->surName;
-	//	
-	//}
 
-	//адрес а[i], значение a[i]->строковое_поле, адрес в[i], значение в[i]->строковое_поле.
-	for (int i = 0; i < 10; i++) {
-		cout << endl << "адрес A[i] " << &A[i] << " a[i]->surName " << A[i].surName;
-		//cout << endl << "адрес B[i] " << &B[i] << " B[i]->surName " << B[i]->surName;
+	ofstream binariFstreamFile;
+	binariFstreamFile.open("binariFstreamFile.txt", ios_base::out | ios_base::binary);
+	binariFstreamFile << records;  
+	binariFstreamFile.close();
+
+	Record inRecord = { "Пасочникова", "А.Р.", 2006, 1500.50, {28,04,2023} }; ;
+
+	fopen_s(&textFile, "textFile.txt", "a");
+	fprintf(textFile, "%s %s %d %f %d %d %d \n", \
+		inRecord.surName, \
+		inRecord.ident, \
+		inRecord.year, \
+		inRecord.salary, \
+		inRecord.date.day, inRecord.date.month, inRecord.date.year);
+	fclose(textFile);
+	Record fileRecords[4];
+	fopen_s(&textFile, "./textFile.txt", "r");
+	for (int i = 0; i < 4; i++) {
+		fscanf_s(textFile, "%s", fileRecords[i].surName, _countof(fileRecords[i].surName));
+		fscanf_s(textFile, "%s", fileRecords[i].ident, _countof(fileRecords[i].ident));
+		fscanf_s(textFile, "%d", &fileRecords[i].year);
+		fscanf_s(textFile, "%f", &fileRecords[i].salary);
+		fscanf_s(textFile, "%d", &fileRecords[i].date.day);
+		fscanf_s(textFile, "%d", &fileRecords[i].date.month);
+		fscanf_s(textFile, "%d", &fileRecords[i].date.year);
 	}
-
-	//for (int i = 0; i < 10; i++) {
-	//	delete B[i];
-	//}
-	//delete[]B;
-	//free(A);
-
-
-	//pract_3
-
-	addItem(records[0]);
-	addItem(records[1]);
-	addItem(records[2]);
-	DrawWithList();
-	struct Record newRecord = { "Баландин", 'С', 123.7000, 2, {06,06,2022},0 };
-	insertItem(1, newRecord);
-	DrawWithList();
-	deleteItem(3);
-	DrawWithList();
-	struct Record editRecord = { "Шишков", 'Ш', 79.9800, 3, {07,07,2022},0 };
-	editItem(1, editRecord);
-	DrawWithList();
-
-
-
-
-
-
+	fclose(textFile);
+	Draw(fileRecords, 4);
+	fopen_s(&textFile, "textFile.txt", "r");
+	for (int i = 0; i < 4; i++) {
+		fscanf_s(textFile, "%s", fileRecords[i].surName, _countof(fileRecords[i].surName));
+		fscanf_s(textFile, "%s", fileRecords[i].ident, _countof(fileRecords[i].ident));
+		fscanf_s(textFile, "%d", &fileRecords[i].year);
+		fscanf_s(textFile, "%f", &fileRecords[i].salary);
+		fscanf_s(textFile, "%d", &fileRecords[i].date.day);
+		fscanf_s(textFile, "%d", &fileRecords[i].date.month);
+		fscanf_s(textFile, "%d", &fileRecords[i].date.year);
+	}
+	swap(fileRecords[2].date.day, fileRecords[3].date.day);
+	swap(fileRecords[2].date.month, fileRecords[3].date.month);
+	swap(fileRecords[2].date.year, fileRecords[3].date.year);
+	fclose(textFile);
+	fopen_s(&textFile, "textFile.txt", "w+");
+	for (int i = 0; i < 4; i++) {
+		fprintf(textFile, "%s %s %d %f %d %d %d \n", \
+			fileRecords[i].surName, \
+			fileRecords[i].ident, \
+			fileRecords[i].year, \
+			fileRecords[i].salary, \
+			fileRecords[i].date.day, fileRecords[i].date.month, fileRecords[i].date.year);
+	}
+	fclose(textFile);
+	Draw(fileRecords, 4);
 
 }
